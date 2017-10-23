@@ -379,9 +379,9 @@ func (t *SimpleChaincode) getRecords(stub shim.ChaincodeStubInterface) pb.Respon
 	var number string
 	var err error
 	var record Record
-	if RecordNo <= 10 {
+	if RecordNo < 10 {
 		i := 0
-		for i < RecordNo {
+		for i <= RecordNo {
 			number = strconv.Itoa(i)
 			record, _, err = getRecordById(stub, number)
 			if err != nil {
@@ -401,13 +401,12 @@ func (t *SimpleChaincode) getRecords(stub shim.ChaincodeStubInterface) pb.Respon
 			records = append(records, record)
 			i = i + 1
 		}
-		recordsBytes, err := json.Marshal(&records)
-		if err != nil {
-			shim.Error("Error get records")
-		}
-		return shim.Success(recordsBytes)
 	}
-	return shim.Success(nil)
+	recordsBytes, err := json.Marshal(&records)
+	if err != nil {
+		shim.Error("Error get records")
+	}
+	return shim.Success(recordsBytes)
 }
 
 /*
