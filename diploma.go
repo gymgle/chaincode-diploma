@@ -170,17 +170,18 @@ func (t *SimpleChaincode) enrollStudent(stub shim.ChaincodeStubInterface, args [
 	stuAddress := args[2]
 
 	var school School
-	// var student Student
+	var schBytes []byte
 	var err error
-	school, _, err = getSchoolByAddress(stub, schAddress)
-	if err != nil {
-		return shim.Error("Error get school by address")
-	}
 
-	// student, _, err = getStudentByAddress(stub, stuAddress)
-	// if err != nil {
-	// 	return shim.Error("Error get student by address")
-	// }
+	// 根据学校账户地址获取学校信息
+	schBytes, err = stub.GetState(schAddress)
+	if err != nil {
+		return shim.Error("Error retrieving data")
+	}
+	err = json.Unmarshal(schBytes, &school)
+	if err != nil {
+		return shim.Error("Error unmarshalling data")
+	}
 
 	var record Record
 	record = Record{Id: RecordNo, SchoolAddress: schAddress, StudentAddress: stuAddress, SchoolSign: schoolSign, ModifyTime: time.Now().Unix(), ModifyOperation: "2"} // 2 表示入学
@@ -195,11 +196,6 @@ func (t *SimpleChaincode) enrollStudent(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error("Error write school")
 	}
-
-	// err = writeStudent(stub, student)
-	// if err != nil {
-	// 	return shim.Error("Error write student")
-	// }
 
 	RecordNo = RecordNo + 1
 	recordBytes, err := json.Marshal(&record)
@@ -228,17 +224,18 @@ func (t *SimpleChaincode) updateDiploma(stub shim.ChaincodeStubInterface, args [
 	modOperation := args[3]
 
 	var recordBytes []byte
-	// var school School
 	var student Student
+	var stuBytes []byte
 	var err error
-	// school, _, err = getSchoolByAddress(stub, schAddress)
-	// if err != nil {
-	// 	return shim.Error("Error get school")
-	// }
 
-	student, _, err = getStudentByAddress(stub, stuAddress)
+	// 根据学生账户地址获取学生信息
+	stuBytes, err = stub.GetState(stuAddress)
 	if err != nil {
-		return shim.Error("Error get data")
+		return shim.Error("Error retrieving data")
+	}
+	err = json.Unmarshal(stuBytes, &student)
+	if err != nil {
+		return shim.Error("Error unmarshalling data")
 	}
 
 	var record Record
@@ -266,11 +263,6 @@ func (t *SimpleChaincode) updateDiploma(stub shim.ChaincodeStubInterface, args [
 		}
 	}
 
-	// err = writeSchool(stub, school)
-	// if err != nil {
-	// 	return shim.Error("Error write school")
-	// }
-
 	BackGroundNo = BackGroundNo + 1
 	recordBytes, err = json.Marshal(&record)
 	if err != nil {
@@ -296,20 +288,6 @@ func (t *SimpleChaincode) getStudentByAddress(stub shim.ChaincodeStubInterface, 
 	return shim.Success(stuBytes)
 }
 
-func getStudentByAddress(stub shim.ChaincodeStubInterface, address string) (Student, []byte, error) {
-	var student Student
-	stuBytes, err := stub.GetState(address)
-	if err != nil {
-		fmt.Println("Error retrieving data")
-	}
-
-	err = json.Unmarshal(stuBytes, &student)
-	if err != nil {
-		fmt.Println("Error unmarshalling data")
-	}
-	return student, stuBytes, nil
-}
-
 /*
  * 通过地址获取学校的信息
  * args[0] address
@@ -326,20 +304,6 @@ func (t *SimpleChaincode) getSchoolByAddress(stub shim.ChaincodeStubInterface, a
 	return shim.Success(schBytes)
 }
 
-func getSchoolByAddress(stub shim.ChaincodeStubInterface, address string) (School, []byte, error) {
-	var school School
-	schBytes, err := stub.GetState(address)
-	if err != nil {
-		fmt.Println("Error retrieving data")
-	}
-
-	err = json.Unmarshal(schBytes, &school)
-	if err != nil {
-		fmt.Println("Error unmarshalling data")
-	}
-	return school, schBytes, nil
-}
-
 /*
  * 通过 Id 获取记录
  * args[0] 记录的 Id
@@ -351,24 +315,10 @@ func (t *SimpleChaincode) getRecordById(stub shim.ChaincodeStubInterface, args [
 
 	recBytes, err := stub.GetState("Record" + args[0])
 	if err != nil {
-		fmt.Println("Error retrieving data")
+		return shim.Error("Error retrieving data")
 	}
 
 	return shim.Success(recBytes)
-}
-
-func getRecordById(stub shim.ChaincodeStubInterface, id string) (Record, []byte, error) {
-	var record Record
-	recBytes, err := stub.GetState("Record" + id)
-	if err != nil {
-		fmt.Println("Error retrieving data")
-	}
-
-	err = json.Unmarshal(recBytes, &record)
-	if err != nil {
-		fmt.Println("Error unmarshalling data")
-	}
-	return record, recBytes, nil
 }
 
 /*
@@ -379,13 +329,18 @@ func (t *SimpleChaincode) getRecords(stub shim.ChaincodeStubInterface) pb.Respon
 	var number string
 	var err error
 	var record Record
+	var recBytes []byte
 	if RecordNo < 10 {
 		i := 0
 		for i <= RecordNo {
 			number = strconv.Itoa(i)
-			record, _, err = getRecordById(stub, number)
+			recBytes, err = stub.GetState("Record" + number)
 			if err != nil {
 				return shim.Error("Error get detail")
+			}
+			err = json.Unmarshal(recBytes, &record)
+			if err != nil {
+				return shim.Error("Error unmarshalling data")
 			}
 			records = append(records, record)
 			i = i + 1
@@ -394,9 +349,13 @@ func (t *SimpleChaincode) getRecords(stub shim.ChaincodeStubInterface) pb.Respon
 		i := 0
 		for i < 10 {
 			number = strconv.Itoa(i)
-			record, _, err = getRecordById(stub, number)
+			recBytes, err = stub.GetState("Record" + number)
 			if err != nil {
 				return shim.Error("Error get detail")
+			}
+			err = json.Unmarshal(recBytes, &record)
+			if err != nil {
+				return shim.Error("Error unmarshalling data")
 			}
 			records = append(records, record)
 			i = i + 1
@@ -416,7 +375,7 @@ func (t *SimpleChaincode) getRecords(stub shim.ChaincodeStubInterface) pb.Respon
 func (t *SimpleChaincode) getBackgroundById(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	backBytes, err := stub.GetState("BackGround" + args[0])
 	if err != nil {
-		fmt.Println("Error retrieving data")
+		return shim.Error("Error retrieving data")
 	}
 	return shim.Success(backBytes)
 }
