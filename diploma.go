@@ -1,6 +1,7 @@
 /*
-	author:swb
-	emial:swbsin@163.com
+	authors:
+		"swb"<swbsin@163.com>
+		"Gymgle"<ymgongcn@gmail.com>
 	MIT License
 */
 
