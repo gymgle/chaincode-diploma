@@ -1,9 +1,9 @@
 /*
-	authors:
-		"swb"<swbsin@163.com>
-		"Gymgle"<ymgongcn@gmail.com>
-	MIT License
-*/
+ *	authors:
+ *		"swb"<swbsin@163.com>
+ *		"Gymgle"<ymgongcn@gmail.com>
+ *	MIT License
+ */
 
 package main
 
@@ -48,7 +48,7 @@ type Student struct {
 type Background struct {
 	Id       int
 	ExitTime int64
-	Status   string //0:毕业 1：退学
+	Status   string // 0:毕业 1:退学
 }
 
 type Record struct {
@@ -57,7 +57,7 @@ type Record struct {
 	StudentAddress  string
 	SchoolSign      string
 	ModifyTime      int64
-	ModifyOperation string //0:正常毕业 1：退学 2:入学
+	ModifyOperation string // 0:正常毕业 1:退学 2:入学
 }
 
 /*
@@ -212,7 +212,7 @@ func (t *SimpleChaincode) enrollStudent(stub shim.ChaincodeStubInterface, args [
  * args[0] 学校账户地址
  * args[1] 学校签名
  * args[2] 待修改学生的账户地址
- * args[3] 对该学生的学历进行怎样的修改，0：正常毕业  1：退学
+ * args[3] 对该学生的学历进行怎样的修改，0：正常毕业 1：退学
  */
 func (t *SimpleChaincode) updateDiploma(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 4 {
